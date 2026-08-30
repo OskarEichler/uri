@@ -565,18 +565,18 @@ module URI
   #   # => "foo=0&foo=1&bar=2"
   #
   def self.encode_www_form(enum, enc=nil)
-    enum.map do |k,v|
+    enum.flat_map do |k,v|
       if v.nil?
         encode_www_form_component(k, enc)
-      elsif v.respond_to?(:to_ary)
-        v.to_ary.map do |w|
+      elsif ary = Array.try_convert(v)
+        ary.map do |w|
           str = encode_www_form_component(k, enc)
           unless w.nil?
             str << '='
             str << encode_www_form_component(w, enc)
           end
           str
-        end.join('&')
+        end
       else
         str = encode_www_form_component(k, enc)
         str << '='

@@ -270,14 +270,15 @@ module URI
       head = ''
       body = ''
       @headers.each do |x|
-        case x[0]
+        name = URI.decode_uri_component(x[0])
+        value = URI.decode_uri_component(x[1])
+        case name.downcase
         when 'body'
-          body = URI.decode_uri_component(x[1])
+          body = value
         when 'to'
-          to << ', ' + URI.decode_uri_component(x[1])
+          to << ', ' + value
         else
-          head << URI.decode_uri_component(x[0]).capitalize + ': ' +
-            URI.decode_uri_component(x[1])  + "\n"
+          head << name.capitalize + ': ' + value + "\n"
         end
       end
 

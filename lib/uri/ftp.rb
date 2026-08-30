@@ -49,7 +49,7 @@ module URI
       # Do not use this method!  Not tested.  [Bug #7301]
       # This methods remains just for compatibility,
       # Keep it undocumented until the active maintainer is assigned.
-      typecode = nil if typecode.size == 0
+      typecode = nil if typecode&.empty?
       if typecode && !TYPECODE.include?(typecode)
         raise ArgumentError,
           "bad typecode is specified: #{typecode}"
@@ -57,8 +57,10 @@ module URI
 
       # do escape
 
+      userinfo = password.nil? ? user : "#{user}:#{password}"
+
       self.new('ftp',
-               [user, password],
+               userinfo,
                host, port, nil,
                typecode ? path + TYPECODE_PREFIX + typecode : path,
                nil, nil, nil, arg_check)
@@ -207,12 +209,24 @@ module URI
     end
 
     def merge(oth) # :nodoc:
-      tmp = super(oth)
-      if self != tmp
-        tmp.set_typecode(oth.typecode)
+      rel = parser.__send__(:convert_to_uri, oth)
+      tmp = super(rel)
+      if tmp.is_a?(FTP) && self != tmp
+        tmp.set_typecode(rel.is_a?(FTP) ? rel.typecode : nil)
+        tmp = parser.parse(tmp.to_s) unless rel.is_a?(FTP)
       end
 
       return tmp
+    end
+
+    def merge!(oth) # :nodoc:
+      tmp = merge(oth)
+      return if self == tmp && query == tmp.query && fragment == tmp.fragment
+
+      replace!(tmp)
+      self.query = tmp.query
+      self.fragment = tmp.fragment
+      self
     end
 
     # Returns the path from an FTP URI.

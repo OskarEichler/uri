@@ -565,18 +565,18 @@ module URI
   #   # => "foo=0&foo=1&bar=2"
   #
   def self.encode_www_form(enum, enc=nil)
-    enum.map do |k,v|
+    enum.flat_map do |k,v|
       if v.nil?
         encode_www_form_component(k, enc)
-      elsif v.respond_to?(:to_ary)
-        v.to_ary.map do |w|
+      elsif ary = Array.try_convert(v)
+        ary.map do |w|
           str = encode_www_form_component(k, enc)
           unless w.nil?
             str << '='
             str << encode_www_form_component(w, enc)
           end
           str
-        end.join('&')
+        end
       else
         str = encode_www_form_component(k, enc)
         str << '='
@@ -678,8 +678,11 @@ module URI
 =end
   WEB_ENCODINGS_ = {
     "unicode-1-1-utf-8"=>"utf-8",
+    "unicode11utf8"=>"utf-8",
+    "unicode20utf8"=>"utf-8",
     "utf-8"=>"utf-8",
     "utf8"=>"utf-8",
+    "x-unicode20utf8"=>"utf-8",
     "866"=>"ibm866",
     "cp866"=>"ibm866",
     "csibm866"=>"ibm866",
@@ -880,6 +883,12 @@ module URI
     "ksc_5601"=>"euc-kr",
     "windows-949"=>"euc-kr",
     "utf-16be"=>"utf-16be",
+    "unicodefffe"=>"utf-16be",
+    "csunicode"=>"utf-16le",
+    "iso-10646-ucs-2"=>"utf-16le",
+    "ucs-2"=>"utf-16le",
+    "unicode"=>"utf-16le",
+    "unicodefeff"=>"utf-16le",
     "utf-16"=>"utf-16le",
     "utf-16le"=>"utf-16le",
   } # :nodoc:
